@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<title>角色详情 —— 咒术回战心理诊断</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --card-bg: #14141f;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --accent: #c8a84e;
+  --radius: 16px;
+  --shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+.particles {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(100,50,200,.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(200,50,50,.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(50,100,200,.05) 0%, transparent 50%);
+}
+
+.container { max-width: 640px; margin: 0 auto; padding: 16px; position: relative; z-index: 1; }
+
+/* Header */
+.header {
+  text-align: center; padding: 40px 16px 30px; position: relative;
+}
+.header .seal {
+  width: 64px; height: 64px; margin: 0 auto 16px;
+  border: 2px solid var(--accent); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  animation: sealPulse 3s ease-in-out infinite;
+}
+.header .seal span { font-size: 24px; position: relative; z-index: 1; }
+@keyframes sealPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(200,168,78,.2); }
+  50% { box-shadow: 0 0 40px rgba(200,168,78,.4); }
+}
+.header h1 {
+  font-size: clamp(1.1em, 3.5vw, 1.6em); font-weight: 900; letter-spacing: 2px;
+  background: linear-gradient(135deg, #c8a84e, #e8d48b, #c8a84e);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header .subtitle { color: var(--text-dim); margin-top: 8px; font-size: .85em; }
+
+/* Result Card */
+.result-section { padding: 10px 0 50px; animation: fadeSlideIn .6s ease; }
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-card {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 32px 20px; text-align: center;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.result-char-img {
+  width: 140px; height: 140px; object-fit: cover;
+  border-radius: 50%; border: 4px solid;
+  margin: 0 auto 12px; display: block;
+  background: rgba(255,255,255,.03);
+}
+.result-emoji {
+  font-size: 4.5em; margin-bottom: 12px; display: block;
+}
+.result-name {
+  font-size: 1.8em; font-weight: 900; letter-spacing: 2px; margin-bottom: 2px;
+}
+.result-from { color: var(--text-dim); font-size: .82em; margin-bottom: 20px; }
+
+.result-desc {
+  max-width: 480px; margin: 0 auto 24px; line-height: 1.8;
+  color: var(--text-dim); font-size: .88em; text-align: left;
+  padding: 0 4px;
+}
+.result-desc .highlight { color: var(--text); font-weight: 600; }
+
+.result-quote {
+  margin: 0 auto 24px; max-width: 440px; padding: 18px 20px;
+  background: rgba(200,168,78,.06); border-radius: 12px;
+  font-style: italic; font-size: .9em; position: relative;
+}
+.result-quote::before { content: '"'; font-size: 2.6em; color: var(--accent); position: absolute; top: -10px; left: 10px; opacity: .4; }
+
+/* Dimension Bars */
+.dims-section { max-width: 400px; margin: 0 auto 24px; text-align: left; padding: 0 4px; }
+.dims-section h4 { text-align: center; color: var(--text-dim); font-weight: 400; font-size: .82em; letter-spacing: 2px; margin-bottom: 14px; }
+.dim-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.dim-label { width: 56px; font-size: .75em; color: var(--text-dim); text-align: right; flex-shrink: 0; white-space: nowrap; }
+.dim-bar-wrap { flex: 1; height: 8px; background: rgba(255,255,255,.05); border-radius: 10px; overflow: hidden; }
+.dim-bar { height: 100%; border-radius: 10px; transition: width 1s ease .3s; }
+.dim-val { width: 84px; font-size: .72em; color: var(--text-dim); text-align: left; flex-shrink: 0; white-space: nowrap; }
+
+/* Trait Analysis */
+.trait-section { max-width: 400px; margin: 0 auto 24px; }
+.trait-section h4 { text-align: center; color: var(--text-dim); font-weight: 400; font-size: .82em; letter-spacing: 2px; margin-bottom: 14px; }
+.trait-card {
+  background: rgba(255,255,255,.02); border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 8px; text-align: left;
+  border-left: 3px solid;
+}
+.trait-card .trait-title { font-size: .85em; font-weight: 600; margin-bottom: 4px; }
+.trait-card .trait-desc { font-size: .76em; color: var(--text-dim); line-height: 1.6; }
+
+/* Buttons */
+.btn-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+.btn {
+  display: inline-block; padding: 14px 28px; border-radius: 50px;
+  font-size: .9em; font-weight: 700; cursor: pointer; letter-spacing: 1px;
+  font-family: inherit; text-decoration: none; transition: all .3s;
+  min-height: 48px; -webkit-appearance: none; border: none;
+}
+.btn-primary {
+  background: var(--accent); color: #000;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(200,168,78,.3); }
+.btn-outline {
+  border: 1px solid rgba(255,255,255,.15); background: var(--card-bg); color: var(--text);
+}
+.btn-outline:hover { border-color: var(--accent); background: rgba(200,168,78,.1); }
+
+/* All Characters Nav */
+.all-chars-section { max-width: 440px; margin: 24px auto 0; }
+.all-chars-section h4 { text-align: center; color: var(--text-dim); font-weight: 400; font-size: .78em; letter-spacing: 2px; margin-bottom: 12px; }
+.char-nav-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+}
+.char-nav-item {
+  display: block; text-align: center; padding: 8px 4px;
+  background: rgba(255,255,255,.02); border-radius: 8px;
+  text-decoration: none; color: var(--text-dim); font-size: .7em;
+  border: 1px solid rgba(255,255,255,.04);
+  transition: all .25s;
+}
+.char-nav-item:hover { border-color: var(--accent); color: var(--text); background: rgba(200,168,78,.08); }
+.char-nav-item.active { border-color: var(--accent); color: var(--accent); background: rgba(200,168,78,.1); }
+.char-nav-item .nav-emoji { display: block; font-size: 1.4em; margin-bottom: 2px; }
+.char-nav-item .nav-name { font-size: .95em; }
+
+/* Error */
+.error-card {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 48px 20px; text-align: center;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.error-card .error-emoji { font-size: 3em; margin-bottom: 12px; }
+.error-card h2 { font-size: 1.2em; margin-bottom: 8px; }
+.error-card p { color: var(--text-dim); font-size: .88em; margin-bottom: 20px; }
+
+.footer { text-align: center; padding: 30px 16px; color: var(--text-dim); font-size: .75em; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .container { padding: 10px; }
+  .header { padding: 30px 12px 20px; }
+  .header .seal { width: 52px; height: 52px; }
+  .header .seal span { font-size: 20px; }
+  .result-card { padding: 24px 14px; }
+  .result-name { font-size: 1.4em; }
+  .result-char-img { width: 110px; height: 110px; }
+  .result-desc { font-size: .84em; }
+  .result-quote { font-size: .85em; padding: 14px 16px; }
+  .dim-label { width: 48px; font-size: .7em; }
+  .dim-val { width: 72px; font-size: .68em; }
+  .char-nav-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .char-nav-item { font-size: .65em; padding: 6px 2px; }
+}
+
+@media (max-width: 380px) {
+  .container { padding: 8px; }
+  .header { padding: 24px 8px 16px; }
+  .header .seal { width: 44px; height: 44px; }
+  .header .seal span { font-size: 18px; }
+  .result-card { padding: 20px 10px; }
+  .result-name { font-size: 1.2em; }
+  .result-char-img { width: 90px; height: 90px; }
+  .result-desc { font-size: .8em; }
+  .result-quote { font-size: .8em; padding: 12px 14px; }
+  .result-quote::before { font-size: 2em; top: -8px; }
+  .char-nav-grid { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .char-nav-item .nav-name { font-size: .8em; }
+}
+</style>
+</head>
+<body>
+
+<div class="particles"></div>
+
+<div class="container">
+  <header class="header">
+    <div class="seal"><span>呪</span></div>
+    <h1>咒术回战 · 角色档案</h1>
+    <p class="subtitle">—— 心理维度 · 完整诊断数据 ——</p>
+  </header>
+
+  <section class="result-section" id="resultSection"></section>
+
+  <footer class="footer">
+    <p>呪術廻戦 · 非公式粉丝心理诊断 · 仅供娱乐</p>
+  </footer>
+</div>
+
+<script>
+const characters = [
+  {
+    id: 'gojo',
+    name: '五条 悟',
+    jp: 'Gojo Satoru',
+    from: '咒术回战',
+    emoji: '👁️',
+    img: './image/gojo.jpg',
+    color: '#4FC3F7',
+    dims: [85, 30, 75, 95],
+    traits: [
+      { title: '极致外向', desc: '五条悟在人群中游刃有余，享受成为焦点，但也习惯独自承担最强者的孤独。他的社交能量来源于与生俱来的自信和碾压级的实力。' },
+      { title: '高度理性', desc: '他看似随性不羁，实则拥有极其冷静的判断力。情感不会干扰他的决策——他选择相信自己的学生，是因为理性告诉他"新一代才是未来"。' },
+      { title: '坚定的理想主义者', desc: '五条悟厌恶腐朽的咒术界高层规则。他不愿通过屠杀来改革，而是选择培养下一代来逐步改变世界——这是一种更持久、更温和的理想主义。' },
+      { title: '极致主动', desc: '他从不等待——无论是战斗还是改革，他都会主动出击。天上天下，唯我独尊，这句台词正是他主动掌控一切的最好写照。' }
+    ],
+    desc: `
+      <p>五条悟是当代最强的咒术师，<span class="highlight">天上天下，唯我独尊</span>。</p>
+      <p style="margin-top:12px;">他拥有<span class="highlight">碾压级的自信</span>——不是因为傲慢，而是因为他确实有匹配这份自信的实力。他看似玩世不恭、嬉皮笑脸，但内心深藏着改变整个腐朽系统的宏大理想。他讨厌无意义的规则，坚信<span class="highlight">强大不是为了支配，而是为了守护</span>。</p>
+      <p style="margin-top:12px;">他重视同伴，尤其关心后辈的成长。他选择培养学生而非直接推翻高层——这是一种更长远的改革。关键时刻他永远是最可靠的支柱。</p>
+    `,
+    quote: '天上天下，唯我独尊。'
+  },
+  {
+    id: 'itadori',
+    name: '虎杖 悠仁',
+    jp: 'Itadori Yuji',
+    from: '咒术回战',
+    emoji: '✊',
+    img: './image/itadori.jpg',
+    color: '#FF6E6E',
+    dims: [75, 90, 90, 80],
+    traits: [
+      { title: '外向开朗', desc: '虎杖天生具有亲和力，能够快速融入任何环境。他在社交中真诚坦率，不设防备，这种纯粹的个性让他自然而然地吸引他人。' },
+      { title: '感性驱动', desc: '他的行动几乎完全由情感和信念驱动——"正确的事就应该去做"。他的感性不是软弱，而是他力量的来源和行动的理由。' },
+      { title: '坚定的理想主义者', desc: '虎杖追求"正确的死"，希望每个人都能活得有意义。他相信善意和羁绊的力量，即使在咒术界这个残酷的世界里，也从未放弃这份信念。' },
+      { title: '积极主动', desc: '他会毫不犹豫地为同伴挺身而出。面对强敌从不退缩，面对困难从不抱怨——行动永远比语言先到。' }
+    ],
+    desc: `
+      <p>虎杖悠仁拥有<span class="highlight">最纯粹的灵魂</span>——在咒术界这个残酷的世界里，他的温柔和坚定如同暗夜中的一束光。</p>
+      <p style="margin-top:12px;">他拥有一颗<span class="highlight">温暖而坚定</span>的心。他不一定是最强的那个，但一定是所有人中最不愿放弃的那个。他相信"正确的事"就应该去做，即使代价沉重——他的善良不是软弱，而是他力量的来源。</p>
+      <p style="margin-top:12px;">他重视同伴之间的羁绊，愿意为了在乎的人拼尽全力。他追求的"正确的死"，其实是希望<span class="highlight">每个人都能活得有意义</span>。</p>
+    `,
+    quote: '虽然我不知道自己死亡时会是怎样，但我不想为自己的活法后悔！'
+  },
+  {
+    id: 'megumi',
+    name: '伏黑 恵',
+    jp: 'Fushiguro Megumi',
+    from: '咒术回战',
+    emoji: '🌑',
+    img: './image/megumi.jpg',
+    color: '#7C4DFF',
+    dims: [15, 25, 65, 60],
+    traits: [
+      { title: '深度内向', desc: '伏黑习惯独处，不轻易向他人展露内心。他的话少但精，每一句都有分量。他的内向不是害羞，而是一种经过深思熟虑后的选择。' },
+      { title: '理性冷静', desc: '他在战斗中始终保持冷静的判断力，不会被情绪左右。他的理性让他能在危急时刻做出最优选择——即使那个选择并不轻松。' },
+      { title: '独立的是非观', desc: '伏黑有着强烈的个人原则，他不盲目遵循规则，也不感情用事地帮助所有人。他用自己的标准判断谁值得拯救——这种独立性在咒术界很罕见。' },
+      { title: '谨慎而果断', desc: '他平时低调谨慎，但在关键时刻绝不犹豫。他的主动性是选择性的——只有在他认定的事情上，他才会展现出令人惊叹的行动力。' }
+    ],
+    desc: `
+      <p>伏黑恵——<span class="highlight">沉默但绝不软弱</span>。他的冷静外表下，藏着咒术界最令人期待的天赋。</p>
+      <p style="margin-top:12px;">他冷静、理性，不轻易向他人展露内心。他拥有<span class="highlight">独立的判断力</span>和强烈的个人原则——不会盲目遵循规则，也不会感情用事地帮助所有人。他会用自己的标准去判断，这很酷，也很孤独。</p>
+      <p style="margin-top:12px;">他话不多但行动力极强，习惯独自承担。但那些真正了解他的人知道——在<span class="highlight">最黑暗的时刻</span>，他比任何人都更值得信赖。他身上潜藏着连自己都未察觉的巨大可能性。</p>
+    `,
+    quote: '唯有不平等的现实平等地存在着，我会不平等地拯救他人。'
+  },
+  {
+    id: 'nobara',
+    name: '钉崎 野薔薇',
+    jp: 'Kugisaki Nobara',
+    from: '咒术回战',
+    emoji: '🔨',
+    img: './image/nobara.jpg',
+    color: '#FF8C42',
+    dims: [80, 70, 80, 85],
+    traits: [
+      { title: '开朗直率', desc: '钉崎从不掩饰自己的想法和情绪，在人群中始终做真实的自己。她的坦率让人感到舒适，也让人不敢轻视。' },
+      { title: '外刚内韧', desc: '她表面看起来大大咧咧，但内心情感丰富而坚定。她对自己的出身和身份有着强烈的自豪——她从不会因为别人的眼光而动摇。' },
+      { title: '忠于自我的理想', desc: '钉崎的理想不是改变世界，而是忠于自己的选择。她追求的是真实地活着，用自己的方式证明"来自乡下"也能成为最强的咒术师。' },
+      { title: '极度主动', desc: '她敢爱敢恨，敢打敢拼。在战斗中从不退缩，在生活中从不伪装——她的主动来自于对自己百分之百的忠诚。' }
+    ],
+    desc: `
+      <p>钉崎野薔薇——<span class="highlight">活得真实而炽热</span>，是咒术界最不容忽视的存在。</p>
+      <p style="margin-top:12px;">她开朗直率，从不掩饰自己的想法和情绪。她拥有<span class="highlight">钢铁般的内心</span>——外表看起来随性，但她清楚的知道自己是谁、从哪里来、要到哪里去。她不会因为别人的眼光而改变自己。</p>
+      <p style="margin-top:12px;">她重视朋友，但绝不依赖朋友。她相信<span class="highlight">真正的强大</span>来自于对自己的忠诚。在关键时刻，她的坚韧会出乎所有人的意料。</p>
+    `,
+    quote: '我叫钉崎野蔷薇，高兴点小伙子们，一点红来了。'
+  },
+  {
+    id: 'inumaki',
+    name: '狗卷 棘',
+    jp: 'Inumaki Toge',
+    from: '咒术回战',
+    emoji: '🌀',
+    img: './image/inumaki.jpg',
+    color: '#81C784',
+    dims: [10, 50, 55, 40],
+    traits: [
+      { title: '极度内向', desc: '狗卷几乎不说话——他的咒言术要求他克制语言，但这反而让他发展出了一种独特的交流方式。他用最少的词汇传达最精准的意图。' },
+      { title: '情感敏锐', desc: '他对他人的情绪变化极其敏感。虽然话少，但他总能察觉同伴的状态变化，是一个无声但可靠的存在。' },
+      { title: '中庸而稳定', desc: '狗卷在理想和务实之间保持着良好的平衡。他不会高喊口号，也不会冷漠以对——他用行动表明立场。' },
+      { title: '谨慎守护', desc: '他行事谨慎，不轻易出头，但在关键时刻总能以最精准的方式做出贡献。他的主动性体现在守护同伴时的毫不犹豫。' }
+    ],
+    desc: `
+      <p>狗卷棘——<span class="highlight">少言寡语，但存在感从不缺席</span>。咒言术的使用者，用最少的语言创造最大的影响力。</p>
+      <p style="margin-top:12px;">他不喜欢多余的表达，能用行动解决的事绝不废话。但这不代表他没有想法——恰恰相反，他的<span class="highlight">内心世界丰富而敏锐</span>。他总在关键时刻用最精准的方式做出贡献，让人无法忽视他的价值。</p>
+      <p style="margin-top:12px;">他对他人的情绪变化非常敏感，是一个<span class="highlight">可靠的观察者和守护者</span>。他不会成为聚光灯下的主角，但他永远是同伴心中最安心的后盾。</p>
+    `,
+    quote: '……（鲑鱼）'
+  },
+  {
+    id: 'maki',
+    name: '禅院 真希',
+    jp: 'Zenin Maki',
+    from: '咒术回战',
+    emoji: '⚔️',
+    img: './image/maki.jpg',
+    color: '#4CAF50',
+    dims: [40, 30, 85, 90],
+    traits: [
+      { title: '偏内向但坚定', desc: '真希不追求社交认同——她不需要。她更习惯独自训练和战斗，社交对她来说不是必需品，而是可选品。' },
+      { title: '极度理性', desc: '在禅院家长大的经历让她对"天赋决定论"深恶痛绝。她不相信命运，只相信汗水和坚持。她的理性来自于对现实最清醒的认知。' },
+      { title: '不屈的理想主义者', desc: '真希的理想很简单——证明"没有咒力也能成为最强"。这意味着她必须用努力去打破整个咒术界的偏见。她的理想主义和行动力一样强大。' },
+      { title: '极致主动', desc: '她从不等待机会——她自己创造机会。面对不公，她的选择永远是正面迎击。她的主动性是刻在骨子里的倔强。' }
+    ],
+    desc: `
+      <p>禅院真希——<span class="highlight">从不向命运低头</span>。天与咒缚赐予了她强悍的身体，但真正的强大来自她的意志。</p>
+      <p style="margin-top:12px;">她天生就不相信"命中注定"这四个字。如果有人告诉她"你不行"，她的反应不是沮丧，而是<span class="highlight">用行动证明他们错了</span>。她的一切成就都来自于自己的汗水和坚持，正因如此，她比任何人都更值得尊敬。</p>
+      <p style="margin-top:12px;">她有些倔强，有时候甚至让人难以接近。但她的<span class="highlight">不服输和韧性</span>是她最大的武器。她不会抱怨环境的不公——她会用自己的双手创造一个公平的未来。</p>
+    `,
+    quote: '要开始了，真依。'
+  },
+  {
+    id: 'geto',
+    name: '夏油 傑',
+    jp: 'Geto Suguru',
+    from: '咒术回战',
+    emoji: '🪷',
+    img: './image/geto.jpg',
+    color: '#90A4AE',
+    dims: [70, 55, 95, 90],
+    traits: [
+      { title: '富有领袖魅力', desc: '夏油傑天然具有吸引他人追随的气质。他的社交能量来自于强大的信念和清晰的愿景——人们追随他不是因为恐惧，而是因为被他的理想所感染。' },
+      { title: '感性理性并重', desc: '夏油的悲剧在于——他的理性足以看清世界的荒谬，但他的感性让他无法接受。这种矛盾使他走上了极端之路。' },
+      { title: '极端的理想主义者', desc: '夏油傑拥有最强烈的理想主义——创造一个只有咒术师的世界。当理想走向极端，当"改变世界"变成"只有我的方式才是对的"，信念就成了最坚固的牢笼。' },
+      { title: '极度主动', desc: '他不会等待改变——他亲手创造改变。从建立宗教团体到策划百鬼夜行，夏油傑的行动力贯穿始终。他是天生的行动者，无论方向对错。' }
+    ],
+    desc: `
+      <p>夏油傑——<span class="highlight">理想与偏执之间</span>，只隔着一层薄薄的面纱。他曾是五条悟唯一的挚友，也是咒术界最大的威胁。</p>
+      <p style="margin-top:12px;">他拥有<span class="highlight">极强的信念感</span>和领袖魅力。他曾经怀抱着改变世界的宏大理想，他的热情能感染身边的人跟随他。他无法接受世界的不合理，这种愤怒是他前进的燃料。</p>
+      <p style="margin-top:12px;">但理想主义走向极端时，"改变世界"变成了"只有我的方式才是对的"。<span class="highlight">信念是武器，但也可能是牢笼</span>——夏油傑的故事是咒术回战中最深刻的警醒。</p>
+    `,
+    quote: '创造一个只有咒术师的世界——这难道不是合理的愿望吗？'
+  },
+  {
+    id: 'nanami',
+    name: '七海 建人',
+    jp: 'Nanami Kento',
+    from: '咒术回战',
+    emoji: '⌚',
+    img: './image/nanami.jpg',
+    color: '#FFD54F',
+    dims: [20, 15, 15, 45],
+    traits: [
+      { title: '内向务实', desc: '七海建人是一个典型的成熟成年人。他不需要通过社交获取能量，独处对他来说是充电而非消耗。他的社交圈小而精。' },
+      { title: '极致理性', desc: '他脱离咒术界去做过普通上班族——这个选择本身就说明了他的理性。他看透了咒术界的荒诞，选择用最务实的方式守护自己认为重要的东西。' },
+      { title: '务实主义者', desc: '他不会高喊理想主义的口号，也不会被热血冲昏头脑。他只是安静地做好自己该做的事——加班有加班费，任务有任务时限。这种务实是成年人最珍贵的品质。' },
+      { title: '可靠但审慎', desc: '他不会主动出击，但一旦承诺就不会退缩。他的主动性是有限的——他知道自己的能力和职责范围，不会逞英雄，但也不会在关键时刻缺席。' }
+    ],
+    desc: `
+      <p>七海建人——<span class="highlight">成熟、务实、可靠到令人心疼</span>。他是咒术回战中最"正常"的成年人，也是最令人安心的存在。</p>
+      <p style="margin-top:12px;">他不会高喊理想主义的口号，也不会被热血冲昏头脑。他只是<span class="highlight">安静地做自己该做的事</span>，并且把它做到最好。他看透了世界的灰色地带，选择了用最务实的方式守护自己认为重要的东西。</p>
+      <p style="margin-top:12px;">他的理性有时让别人觉得他冷漠，但了解他的人都知道——在那个冷静的外壳之下，藏着一颗<span class="highlight">比谁都温柔</span>的心。他不会说漂亮话，但他会准时出现。这就够了。</p>
+    `,
+    quote: '枕边脱落的头发变多了，喜欢吃的夹心面包从便利店消失了，这些小小的绝望堆彻起来才会让人长大。'
+  },
+  {
+    id: 'todo',
+    name: '東堂 葵',
+    jp: 'Todo Aoi',
+    from: '咒术回战',
+    emoji: '🔥',
+    img: './image/todo.jpg',
+    color: '#EF5350',
+    dims: [90, 85, 70, 95],
+    traits: [
+      { title: '极致外向', desc: '東堂葵的能量仿佛无穷无尽。他热爱战斗、热爱与强者交手、热爱大声说出自己的想法。他在人群中永远是能量的焦点。' },
+      { title: '情感驱动', desc: '東堂的行动大多由热情和好恶驱动——他喜欢就直接说喜欢，不喜欢就绝不妥协。他的感性让他显得粗犷，但也让他无比真诚。' },
+      { title: '独特的价值观', desc: '東堂有着自己的一套判断标准——以"无聊/有趣"为核心。他不遵循常规的理想主义或务实主义，他遵循的是自己的审美和直觉。' },
+      { title: '极致主动', desc: '他从不等待——无论是战斗还是交朋友。他是第一个冲上前线的人，也是第一个表达情感的人。他的主动性来自于对无聊的恐惧。' }
+    ],
+    desc: `
+      <p>東堂葵——<span class="highlight">用热情燃烧整个世界</span>。咒术回战中最热血沸腾的存在，没有之一。</p>
+      <p style="margin-top:12px;">他<span class="highlight">精力充沛、热血澎湃</span>，从不掩饰自己的情感和想法。他喜欢就直接说喜欢，不喜欢就绝不妥协。他用自己的方式定义什么是有趣、什么是无聊——而无聊，是他最无法忍受的事情。</p>
+      <p style="margin-top:12px;">他可能看起来大大咧咧、不按常理出牌，但他有一套自己的<span class="highlight">价值观和判断标准</span>。他对认定的朋友掏心掏肺，而对不认同的人绝不假以辞色。他的真诚和热烈，就是他的咒力。</p>
+    `,
+    quote: '我问你——你喜欢什么样的女人？'
+  },
+  {
+    id: 'yuta',
+    name: '乙骨 憂太',
+    jp: 'Yuta Okkotsu',
+    from: '咒术回战',
+    emoji: '💍',
+    img: './image/yuta.jpg',
+    color: '#64B5F6',
+    dims: [25, 80, 70, 55],
+    traits: [
+      { title: '内向温柔', desc: '乙骨憂太看起来安静、内向，甚至有些怯懦。他不擅长主动社交，但与他相处过的人都会被他的温柔所打动。' },
+      { title: '情感深沉', desc: '乙骨的力量来源于爱——对里香的爱，对同伴的珍惜。他的情感能量是咒术回战中最强大的之一——因为那是真正的、毫无保留的爱。' },
+      { title: '理想但不极端', desc: '他渴望保护所有人，但不执着于改变世界的规则。他的理想是具体的——保护身边的每一个人，这种温和的理想主义让人感到温暖。' },
+      { title: '谨慎但有爆发力', desc: '他平时低调谨慎，不喜欢冲突。但当有人威胁到他珍视的人时，他会化身为最令人敬畏的存在——那种爆发力是压倒性的。' }
+    ],
+    desc: `
+      <p>乙骨憂太——<span class="highlight">温柔，但蕴藏着恐怖的力量</span>。他是咒术回战中最具反差感的角色，也是五条悟最看好的后辈。</p>
+      <p style="margin-top:12px;">他看起来安静、内向，甚至有些怯懦。但这只是表象——他的内心深处承载着<span class="highlight">巨大的情感能量</span>。当他真正在乎一个人或一件事时，他所展现出的力量和决心会震撼所有人。</p>
+      <p style="margin-top:12px;">他的力量来源于<span class="highlight">爱</span>——对某个人的深爱，对同伴的珍惜，对生命的敬畏。他不喜欢冲突，厌恶伤害他人，但当有人威胁到他所珍视的东西时，他会化身为最令人敬畏的存在。</p>
+    `,
+    quote: '这世上没有比爱更扭曲的诅咒了。'
+  }
+];
+
+const dimNames = ['社交能量', '感性驱动', '理想主义', '主动性'];
+const dimPoles = [
+  ['外向', '内向'],
+  ['感性', '理性'],
+  ['理想', '务实'],
+  ['主动', '谨慎']
+];
+const dimColors = ['#4FC3F7', '#FF8C42', '#7C4DFF', '#FF6E6E'];
+
+function getQueryParam(name) {
+  const url = new URL(window.location.href);
+  return url.searchParams.get(name);
+}
+
+function renderCharPage(char) {
+  const dimsHTML = dimNames.map((name, d) => {
+    const val = char.dims[d];
+    const color = dimColors[d];
+    const leftLabel = dimPoles[d][0];
+    const rightLabel = dimPoles[d][1];
+    return `
+      <div class="dim-row">
+        <span class="dim-label" style="color:${color}">${leftLabel}←</span>
+        <div class="dim-bar-wrap">
+          <div class="dim-bar" style="width:${val}%;background:${color}"></div>
+        </div>
+        <span class="dim-val">→${rightLabel} ${val}%</span>
+      </div>
+    `;
+  }).join('');
+
+  const traitsHTML = char.traits.map((t, i) => `
+    <div class="trait-card" style="border-left-color:${dimColors[i]}">
+      <div class="trait-title" style="color:${dimColors[i]}">${dimNames[i]} · ${t.title}</div>
+      <div class="trait-desc">${t.desc}</div>
+    </div>
+  `).join('');
+
+  const allCharsNav = characters.map(c => `
+    <a href="result.html?char=${c.id}" class="char-nav-item${c.id === char.id ? ' active' : ''}">
+      <span class="nav-emoji">${c.emoji}</span>
+      <span class="nav-name">${c.name.slice(0, 2)}</span>
+    </a>
+  `).join('');
+
+  return `
+    <div class="result-card">
+      <img class="result-char-img" src="${char.img}" alt="${char.name}"
+           style="border-color:${char.color};" loading="lazy"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+      <span class="result-emoji" style="display:none;">${char.emoji}</span>
+      <h2 class="result-name" style="color:${char.color}">${char.name}</h2>
+      <p class="result-from">${char.jp} · ${char.from}</p>
+
+      <div class="result-desc">${char.desc}</div>
+      <div class="result-quote">${char.quote}</div>
+
+      <div class="dims-section">
+        <h4>▸ 角色心理维度档案 ▸</h4>
+        ${dimsHTML}
+      </div>
+
+      <div class="trait-section">
+        <h4>▸ 四维特质深度解读 ▸</h4>
+        ${traitsHTML}
+      </div>
+
+      <div class="btn-row">
+        <a href="index.html" class="btn btn-outline">← 返回测试</a>
+        <button class="btn btn-primary" onclick="window.location.href='index.html'">去测试看看你像谁</button>
+      </div>
+
+      <div class="all-chars-section">
+        <h4>▸ 查看其他角色 ▸</h4>
+        <div class="char-nav-grid">${allCharsNav}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderError() {
+  return `
+    <div class="error-card">
+      <div class="error-emoji">🔍</div>
+      <h2>角色未找到</h2>
+      <p>请从测试结果页面选择你的匹配角色。</p>
+      <a href="index.html" class="btn btn-primary">返回测试</a>
+    </div>
+  `;
+}
+
+(function init() {
+  const charId = getQueryParam('char');
+  const char = characters.find(c => c.id === charId);
+  const section = document.getElementById('resultSection');
+  section.innerHTML = char ? renderCharPage(char) : renderError();
+})();
+</script>
+
+</body>
+</html>
